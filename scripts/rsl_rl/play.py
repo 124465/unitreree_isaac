@@ -56,7 +56,7 @@ import isaaclab_tasks  # noqa: F401
 from isaaclab.envs import DirectMARLEnv, multi_agent_to_single_agent
 from isaaclab.utils.assets import retrieve_file_path
 from isaaclab.utils.dict import print_dict
-from isaaclab.utils.pretrained_checkpoint import get_published_pretrained_checkpoint
+from isaaclab_rl.utils.pretrained_checkpoint import get_published_pretrained_checkpoint
 from isaaclab_rl.rsl_rl import RslRlOnPolicyRunnerCfg, RslRlVecEnvWrapper, export_policy_as_jit, export_policy_as_onnx
 from isaaclab_tasks.utils import get_checkpoint_path
 
@@ -117,7 +117,43 @@ def main():
     print(f"[INFO]: Loading model checkpoint from: {resume_path}")
     # load previously trained model
     if not hasattr(agent_cfg, "class_name") or agent_cfg.class_name == "OnPolicyRunner":
-        runner = OnPolicyRunner(env, agent_cfg.to_dict(), log_dir=None, device=agent_cfg.device)
+        # runner = OnPolicyRunner(env, agent_cfg.to_dict(), log_dir=None, device=agent_cfg.device)
+            agent_cfg_dict = agent_cfg.to_dict()
+
+            # 兼容旧版 rsl-rl 2.3.1：只保留 PPO.__init__ 支持的字段
+            allowed_algorithm_keys = {
+                "class_name",
+                "num_learning_epochs",
+                "num_mini_batches",
+                "clip_param",
+                "gamma",
+                "lam",
+                "value_loss_coef",
+                "entropy_coef",
+                "learning_rate",
+                "max_grad_norm",
+                "use_clipped_value_loss",
+                "schedule",
+                "desired_kl",
+                "device",
+                "normalize_advantage_per_mini_batch",
+                "rnd_cfg",
+                "symmetry_cfg",
+                "multi_gpu_cfg",
+            }
+
+            if "algorithm" in agent_cfg_dict:
+                original_alg = dict(agent_cfg_dict["algorithm"])
+                agent_cfg_dict["algorithm"] = {
+                    k: v for k, v in agent_cfg_dict["algorithm"].items()
+                    if k in allowed_algorithm_keys
+                }
+                print("==== original algorithm cfg ====")
+                print(original_alg)
+                print("==== filtered algorithm cfg ====")
+                print(agent_cfg_dict["algorithm"])
+
+            runner = OnPolicyRunner(env, agent_cfg_dict, log_dir=None, device=agent_cfg.device)
     elif agent_cfg.class_name == "DistillationRunner":
         from rsl_rl.runners import DistillationRunner
 

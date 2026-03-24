@@ -181,7 +181,44 @@ def main(env_cfg: ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agen
     env = RslRlVecEnvWrapper(env, clip_actions=agent_cfg.clip_actions)
 
     # create runner from rsl-rl
-    runner = OnPolicyRunner(env, agent_cfg.to_dict(), log_dir=log_dir, device=agent_cfg.device)
+    # runner = OnPolicyRunner(env, agent_cfg.to_dict(), log_dir=log_dir, device=agent_cfg.device)
+        # create runner from rsl-rl
+    agent_cfg_dict = agent_cfg.to_dict()
+
+    # 兼容旧版 rsl-rl 2.3.1：只保留 PPO.__init__ 支持的字段
+    allowed_algorithm_keys = {
+        "class_name",
+        "num_learning_epochs",
+        "num_mini_batches",
+        "clip_param",
+        "gamma",
+        "lam",
+        "value_loss_coef",
+        "entropy_coef",
+        "learning_rate",
+        "max_grad_norm",
+        "use_clipped_value_loss",
+        "schedule",
+        "desired_kl",
+        "device",
+        "normalize_advantage_per_mini_batch",
+        "rnd_cfg",
+        "symmetry_cfg",
+        "multi_gpu_cfg",
+    }
+
+    if "algorithm" in agent_cfg_dict:
+        original_alg = dict(agent_cfg_dict["algorithm"])
+        agent_cfg_dict["algorithm"] = {
+            k: v for k, v in agent_cfg_dict["algorithm"].items()
+            if k in allowed_algorithm_keys
+        }
+        print("==== original algorithm cfg ====")
+        print(original_alg)
+        print("==== filtered algorithm cfg ====")
+        print(agent_cfg_dict["algorithm"])
+
+    runner = OnPolicyRunner(env, agent_cfg_dict, log_dir=log_dir, device=agent_cfg.device)
     # write git state to logs
     runner.add_git_repo_to_log(__file__)
     # load the checkpoint
