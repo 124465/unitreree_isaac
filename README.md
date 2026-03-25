@@ -149,5 +149,72 @@ This repository is built upon the support and contributions of the following ope
 - [robot_lab](https://github.com/fan-ziqi/robot_lab): Referenced for project structure and parts of the implementation.
 - [whole_body_tracking](https://github.com/HybridRobotics/whole_body_tracking): Versatile humanoid control framework for motion tracking.
 
-#自我
+# 描述
 该项目是对宇树机器人的复现，保存在这里主要有一下几个原因，其一是想保存计算结果，二是学习机器人代码
+## source/unitree_rl_lab
+
+这是 核心 Python 包，里面放的是：
+
+机器人资产配置
+任务环境定义
+强化学习配置
+与 Isaac Lab 的接口
+
+source/unitree_rl_lab
+- assets/robots
+  - unitree.py
+  - unitree_actuators.py
+- tasks
+  -  iocomotion 运动
+    - agents
+      - rsl_rl_ppo_cfg.py
+      - init
+    - mdp
+      - curriculums.py
+          - lin_vel_cmd_levels 自适应调整线速度指令
+          - ang_vel_cmd_levels 自适应调整角速度指令
+      - observations.py
+      - rewards.py
+        - 关节惩罚
+          - energy 能量
+          - stand_still 静止时保持姿势 
+        - 机器人
+          - orientation_l2 姿态对其奖励
+          - upward 身体直立惩罚
+          - joint_position_penalty 关节位置惩罚
+        - 足端奖励
+          - feet_stumble 绊倒惩罚
+          - feet_height_body 足端高度离地惩罚
+          - foot_clearance_reward 足端离地间隙奖励
+          - feet_too_near 足端过近惩罚
+          - feet_contact_without_cmd 静止时触地奖励
+          - air_time_variance_penalty 腾空时间方差惩罚
+        - 步态奖励
+          - feet_gait 步态模式奖励
+        - 其他奖励
+          - joint_mirror 关节对称性奖励
+      - init
+      - commands
+        - velocity_command.py 
+        - init
+    - robots 
+  -  mimic 模仿学习
+- untils
+
+## scripts
+
+这是 训练 / 测试入口。
+
+scripts
+ - minic
+  - csv_to_npz
+  - replay_npz
+ - rsl
+   - play
+   - tain
+   - cli_args
+ - list_envs
+
+
+  
+ 
